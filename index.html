@@ -300,12 +300,12 @@ function buildPopup(d, name, distKey) {
   const distTitle = distKey?distKey.charAt(0)+distKey.slice(1).toLowerCase()+' district':'';
   return `<div class="popup-wrap">
     <div class="popup-title">${d.name}<span>#${d.no}${distTitle?' · '+distTitle:''}</span></div>
-    ${winHtml}
     <div class="popup-tabs">
       <div class="popup-tab active" onclick="popTab('${uid}','overview',this)">Overview</div>
       <div class="popup-tab" onclick="popTab('${uid}','analysis',this)">AI Analysis</div>
     </div>
     <div id="${uid}-overview" class="popup-panel active">
+      ${winHtml}
       <div class="bars">${barsHtml}</div>
       <div class="delta-row">${deltaRow}</div>
       ${relHtml}
