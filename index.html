@@ -52,7 +52,7 @@
 
   /* Tooltip on hover */
   .leaflet-tooltip { background: #1e1e1e; border: 1px solid #444; color: #fff; font-size: 0.75rem; padding: 4px 8px; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
-  .leaflet-popup-content-wrapper { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,.7); max-width: none !important; width: auto !important; }
+  .leaflet-popup-content-wrapper { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,.7); }
   .leaflet-popup-tip { background: #1a1a1a; }
   .leaflet-popup-content { margin: 16px; }
   .leaflet-popup-close-button { color: #888 !important; font-size: 1.1rem !important; top: 10px !important; right: 12px !important; }
@@ -68,10 +68,20 @@
   .ctrl-group button.dimmed           { opacity: 0.35; }
 
   /* --- Popup layout --- */
-  .popup-wrap   { width: 680px; }
-  .popup-cols   { display: flex; gap: 16px; align-items: flex-start; width: 100%; }
-  .popup-left   { flex: 0 0 270px; min-width: 0; }
-  .popup-right  { flex: 1; min-width: 0; overflow: hidden; }
+  .popup-wrap   { width: 340px; }
+  .popup-tabs   { display: flex; gap: 0; border-bottom: 1px solid #333; margin-bottom: 12px; }
+  .popup-tab    { flex: 1; padding: 6px 0; text-align: center; font-size: 0.68rem; font-weight: 700; color: #666; cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
+  .popup-tab.active  { color: #fff; border-bottom-color: #f97316; }
+  .popup-panel  { display: none; }
+  .popup-panel.active { display: block; }
+
+  /* --- Popup layout --- */
+  .popup-wrap   { width: 340px; }
+  .popup-tabs   { display: flex; gap: 0; border-bottom: 1px solid #333; margin-bottom: 12px; }
+  .popup-tab    { flex: 1; padding: 6px 0; text-align: center; font-size: 0.68rem; font-weight: 700; color: #666; cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
+  .popup-tab.active  { color: #fff; border-bottom-color: #f97316; }
+  .popup-panel  { display: none; }
+  .popup-panel.active { display: block; }
 
   /* --- Win/Loss badge --- */
   .win-badge  { display:inline-flex; align-items:center; gap:5px; font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:12px; margin-bottom:10px; }
@@ -242,14 +252,15 @@ function deltaLabel(pp, dv) {
 
 function buildPopup(d, name, distKey) {
   if (!d) return `<div class="popup-wrap"><div class="popup-title">${name}</div><div class="no-data">No data available</div></div>`;
+
   const yrs = [
     { yr:'2016', s:d.s16, v:d.v16, t:d.t16, c:d.c16 },
     { yr:'2021', s:d.s21, v:d.v21, t:d.t21, c:d.c21 },
     { yr:'2026', s:d.s26, v:d.v26, t:d.t26, c:d.c26 },
   ];
-  const maxShare = Math.max(...yrs.map(y => y.s||0), 0.1);
+  const maxShare = Math.max(...yrs.map(y=>y.s||0), 0.1);
   const barsHtml = yrs.map(y => {
-    const barW = maxShare>0?(y.s/maxShare*100).toFixed(1):0;
+    const barW = (y.s/maxShare*100).toFixed(1);
     const cand = y.c ? y.c.replace(/^ADV\.?\s*/i,'') : (y.s>0?'NDA ally':'No candidate');
     return `<div class="bar-row">
       <div class="bar-label"><span class="year">${y.yr}</span><span class="cand">${cand}</span><span class="pct" style="color:${y.s>0?'#ff9944':'#666'}">${pct(y.s)}</span></div>
@@ -261,50 +272,54 @@ function buildPopup(d, name, distKey) {
   const pp21_16=d.s21-d.s16, dv21_16=(d.v21&&d.v16)?d.v21-d.v16:null;
   const pp26_21=d.s26-d.s21, dv26_21=(d.v26&&d.v21)?d.v26-d.v21:null;
   const pp26_16=d.s26-d.s16, dv26_16=(d.v26&&d.v16)?d.v26-d.v16:null;
-  const deltaRow = [
-    {label:'2016 → 2021',pp:pp21_16,dv:dv21_16},
-    {label:'2021 → 2026',pp:pp26_21,dv:dv26_21},
-    {label:'2016 → 2026',pp:pp26_16,dv:dv26_16},
-  ].map(({label,pp,dv}) => {
-    const {ppStr,vStr} = deltaLabel(pp,dv);
-    return `<span class="delta-pill ${deltaClass(pp)}"><span class="dp-period">${label}</span><span class="dp-stats"><span class="dp-pp">${ppStr}</span>${vStr?`<span class="dp-votes">${vStr}</span>`:''}</span></span>`;
-  }).join('');
+  const deltaRow = [{label:'2016→2021',pp:pp21_16,dv:dv21_16},{label:'2021→2026',pp:pp26_21,dv:dv26_21},{label:'2016→2026',pp:pp26_16,dv:dv26_16}]
+    .map(({label,pp,dv}) => {
+      const {ppStr,vStr}=deltaLabel(pp,dv);
+      return `<span class="delta-pill ${deltaClass(pp)}"><span class="dp-period">${label}</span><span class="dp-stats"><span class="dp-pp">${ppStr}</span>${vStr?`<span class="dp-votes">${vStr}</span>`:''}</span></span>`;
+    }).join('');
 
   const relHtml = (()=>{
-    const r = RELIGION[distKey];
-    if (!r) return '';
-    const bars = [
-      {label:'Hindu',    p26:r.h26,color:'#f97316'},
-      {label:'Muslim',   p26:r.m26,color:'#22c55e'},
-      {label:'Christian',p26:r.c26,color:'#3b82f6'},
-    ].map(row=>`<div class="rel-bar-row"><span class="rel-bar-label">${row.label}</span><div class="rel-bar-track"><div class="rel-bar-fill" style="width:${row.p26}%;background:${row.color}"></div></div><span class="rel-bar-pct">${row.p26}%</span></div>`).join('');
+    const r=RELIGION[distKey]; if(!r) return '';
+    const bars=[{label:'Hindu',p26:r.h26,color:'#f97316'},{label:'Muslim',p26:r.m26,color:'#22c55e'},{label:'Christian',p26:r.c26,color:'#3b82f6'}]
+      .map(row=>`<div class="rel-bar-row"><span class="rel-bar-label">${row.label}</span><div class="rel-bar-track"><div class="rel-bar-fill" style="width:${row.p26}%;background:${row.color}"></div></div><span class="rel-bar-pct">${row.p26}%</span></div>`).join('');
     return `<div class="rel-section"><div class="rel-title">District Religion Demographics</div><div class="rel-bars">${bars}</div><div class="rel-note">2026 proj. · 2011: H ${r.h11}%, M ${r.m11}%, C ${r.c11}%</div></div>`;
   })();
 
   const winHtml = (()=>{
-    const w26 = d.win26; if (!w26) return '';
-    const ps = p => (p||'').replace('Indian National Congress','INC').replace('Communist Party of India (Marxist)','CPI(M)').replace('Communist Party of India','CPI').replace('Indian Union Muslim League','IUML').replace('Nationalist Congress Party','NCP').replace('Kerala Congress (M)','KC(M)').replace('Bharatiya Janata Party','BJP').replace('Janata Dal (Secular)','JD(S)');
-    if (w26.won) return `<div class="win-badge won">🏆 WON</div><div class="result-box result-box-won"><div class="rb-label">Winner</div><div class="rb-winner">${w26.wn}</div><div class="rb-party">${ps(w26.wp)}</div><div class="rb-margin rb-margin-won">Won by ${w26.margin.toLocaleString('en-IN')} votes</div></div>`;
+    const w26=d.win26; if(!w26) return '';
+    const ps=p=>(p||'').replace('Indian National Congress','INC').replace('Communist Party of India (Marxist)','CPI(M)').replace('Communist Party of India','CPI').replace('Indian Union Muslim League','IUML').replace('Nationalist Congress Party','NCP').replace('Kerala Congress (M)','KC(M)').replace('Bharatiya Janata Party','BJP').replace('Janata Dal (Secular)','JD(S)');
+    if(w26.won) return `<div class="win-badge won">🏆 WON</div><div class="result-box result-box-won"><div class="rb-label">Winner</div><div class="rb-winner">${w26.wn}</div><div class="rb-party">${ps(w26.wp)}</div><div class="rb-margin rb-margin-won">Won by ${w26.margin.toLocaleString('en-IN')} votes</div></div>`;
     return `<div class="win-badge lost">✗ LOST</div><div class="result-box"><div class="rb-label">Lost to</div><div class="rb-winner">${w26.wn}</div><div class="rb-party">${ps(w26.wp)}</div><div class="rb-margin">Lost by ${w26.margin.toLocaleString('en-IN')} votes</div></div>`;
   })();
 
-  const analysis = generateAnalysis(d, distKey, d.no);
-  const tagLabels = {won:'🏆 Seat Won',gain:'▲ NDA Gained',loss:'▼ NDA Lost',hold:'● Stable'};
-  const analysisHtml = `<div class="analysis-card"><h5>Why NDA gained / lost</h5><span class="analysis-tag tag-${analysis.tag}">${tagLabels[analysis.tag]||''}</span>${analysis.points.map(p=>`<div class="analysis-point"><span>›</span><span>${p}</span></div>`).join('')}<div class="analysis-source">Sources: The Hindu · India Today · Outlook · Times of India · 2026 ECI results</div></div>`;
+  const analysis=generateAnalysis(d,distKey,d.no);
+  const tagLabels={won:'🏆 Seat Won',gain:'▲ NDA Gained',loss:'▼ NDA Lost',hold:'● Stable'};
+  const analysisHtml=`<div class="analysis-card"><h5>Why NDA gained / lost</h5><span class="analysis-tag tag-${analysis.tag}">${tagLabels[analysis.tag]||''}</span>${analysis.points.map(p=>`<div class="analysis-point"><span>›</span><span>${p}</span></div>`).join('')}<div class="analysis-source">Sources: The Hindu · India Today · Outlook · ToI · ECI 2026</div></div>`;
 
-  const distTitle = distKey ? distKey.charAt(0)+distKey.slice(1).toLowerCase()+' district' : '';
+  const uid = 'pu'+d.no;
+  const distTitle = distKey?distKey.charAt(0)+distKey.slice(1).toLowerCase()+' district':'';
   return `<div class="popup-wrap">
     <div class="popup-title">${d.name}<span>#${d.no}${distTitle?' · '+distTitle:''}</span></div>
     ${winHtml}
-    <div class="popup-cols">
-      <div class="popup-left">
-        <div class="bars">${barsHtml}</div>
-        <div class="delta-row">${deltaRow}</div>
-        ${relHtml}
-      </div>
-      <div class="popup-right">${analysisHtml}</div>
+    <div class="popup-tabs">
+      <div class="popup-tab active" onclick="popTab('${uid}','overview',this)">Overview</div>
+      <div class="popup-tab" onclick="popTab('${uid}','analysis',this)">AI Analysis</div>
     </div>
+    <div id="${uid}-overview" class="popup-panel active">
+      <div class="bars">${barsHtml}</div>
+      <div class="delta-row">${deltaRow}</div>
+      ${relHtml}
+    </div>
+    <div id="${uid}-analysis" class="popup-panel">${analysisHtml}</div>
   </div>`;
+}
+
+function popTab(uid, name, el) {
+  const wrap = el.closest('.popup-wrap');
+  wrap.querySelectorAll('.popup-tab').forEach(t => t.classList.remove('active'));
+  wrap.querySelectorAll('.popup-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(uid+'-'+name).classList.add('active');
 }
 
 function onEachFeature(feature, layer) {
@@ -340,7 +355,7 @@ function onEachFeature(feature, layer) {
       e.target.closeTooltip();
     },
     click(e) {
-      const popup = L.popup({ maxWidth: 740, minWidth: 600, className: '' })
+      const popup = L.popup({ maxWidth: 360, className: '' })
         .setLatLng(e.latlng)
         .setContent(buildPopup(d, name, (feature.properties.District||'').toUpperCase()))
         .openOn(map);
