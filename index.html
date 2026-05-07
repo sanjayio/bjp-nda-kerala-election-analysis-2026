@@ -11,18 +11,36 @@
 <script src="kerala_2026_data.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f0f0f; color: #eee; }
-  #header { padding: 14px 20px; background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  #header h1 { font-size: 1.1rem; font-weight: 700; color: #fff; }
-  #header .sub { font-size: 0.78rem; color: #999; }
-  #controls { display: flex; gap: 10px; margin-left: auto; align-items: center; flex-wrap: wrap; }
-  .ctrl-group { display: flex; gap: 6px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f0f0f; color: #eee; overflow: hidden; }
+  #header { padding: 10px 16px; background: #1a1a1a; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 12px; position: relative; }
+  #header-top { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; min-width: 0; }
+  #header h1 { font-size: 1.05rem; font-weight: 700; color: #fff; white-space: nowrap; }
+  #header .sub { font-size: 0.75rem; color: #999; }
+  #controls { display: flex; gap: 8px; margin-left: auto; align-items: center; flex-wrap: wrap; }
+  .ctrl-group { display: flex; gap: 5px; }
   .ctrl-sep { width: 1px; background: #444; align-self: stretch; }
-  .ctrl-group button { padding: 5px 14px; border-radius: 20px; border: 1.5px solid #555; background: transparent; color: #aaa; cursor: pointer; font-size: 0.78rem; font-weight: 600; transition: all .15s; }
+  .ctrl-group button { padding: 5px 13px; border-radius: 20px; border: 1.5px solid #555; background: transparent; color: #aaa; cursor: pointer; font-size: 0.76rem; font-weight: 600; transition: all .15s; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   .ctrl-group button.active { background: #ff6600; border-color: #ff6600; color: #fff; }
   .ctrl-group button.active-growth { background: #22c55e; border-color: #22c55e; color: #fff; }
   .ctrl-group button.dimmed { opacity: 0.35; }
-  #map { height: calc(100vh - 54px); }
+  #map { height: calc(100dvh - 54px); }
+
+  /* ── Search ── */
+  #search-wrap { position: relative; flex-shrink: 0; }
+  #search-input { background: #252525; border: 1.5px solid #444; border-radius: 20px; color: #fff; font-size: 0.76rem; padding: 5px 14px 5px 30px; outline: none; width: 160px; transition: width .2s, border-color .15s; }
+  #search-input:focus { width: 200px; border-color: #f97316; }
+  #search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #666; font-size: 0.8rem; pointer-events: none; }
+  #search-dropdown { position: absolute; top: calc(100% + 6px); left: 0; min-width: 220px; background: #1e1e1e; border: 1px solid #444; border-radius: 10px; max-height: 260px; overflow-y: auto; z-index: 3000; display: none; box-shadow: 0 8px 32px rgba(0,0,0,.8); }
+  #search-dropdown.open { display: block; }
+  .search-item { padding: 9px 14px; font-size: 0.78rem; cursor: pointer; color: #ccc; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: center; }
+  .search-item:last-child { border-bottom: none; }
+  .search-item:hover, .search-item.focused { background: #2a2a2a; color: #fff; }
+  .search-item .si-dist { font-size: 0.65rem; color: #666; }
+  .search-no-result { padding: 10px 14px; font-size: 0.75rem; color: #666; font-style: italic; }
+
+  /* ── Mobile menu button ── */
+  #menu-btn { display: none; background: none; border: 1.5px solid #555; border-radius: 8px; color: #aaa; cursor: pointer; padding: 5px 9px; font-size: 1rem; line-height: 1; flex-shrink: 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  #menu-btn:hover { color: #fff; border-color: #888; }
 
   /* Legend */
   .legend { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px 14px; font-size: 0.72rem; line-height: 1.8; color: #ccc; min-width: 140px; }
@@ -62,6 +80,7 @@
 
   /* --- Navbar extras --- */
   .ctrl-group button.active-growth    { background: #22c55e; border-color: #22c55e; color: #fff; }
+  .ctrl-group button.active-nda2nd    { background: #a855f7; border-color: #a855f7; color: #fff; }
   .ctrl-group button.active-hindu     { background: #f97316; border-color: #f97316; color: #fff; }
   .ctrl-group button.active-muslim    { background: #16a34a; border-color: #16a34a; color: #fff; }
   .ctrl-group button.active-christian { background: #3b82f6; border-color: #3b82f6; color: #fff; }
@@ -122,7 +141,7 @@
   .rel-note { font-size: 0.6rem; color: #555; margin-top: 4px; }
 
   /* --- Credits --- */
-  #credits-btn { position:fixed; bottom:20px; right:20px; z-index:1000; background:#1a1a1a; border:1px solid #444; color:#aaa; font-size:0.75rem; font-weight:600; padding:7px 14px; border-radius:20px; cursor:pointer; transition:all .15s; }
+  #credits-btn { position:fixed; bottom:20px; right:20px; z-index:1000; background:#1a1a1a; border:1px solid #444; color:#aaa; font-size:0.75rem; font-weight:600; padding:7px 14px; border-radius:20px; cursor:pointer; transition:all .15s; touch-action:manipulation; }
   #credits-btn:hover { background:#2a2a2a; color:#fff; border-color:#666; }
   #credits-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:2000; align-items:center; justify-content:center; }
   #credits-overlay.open { display:flex; }
@@ -134,6 +153,16 @@
   #credits-dialog .cr-row a:hover { text-decoration:underline; }
   #credits-close { position:absolute; top:12px; right:16px; background:none; border:none; color:#666; font-size:1.2rem; cursor:pointer; line-height:1; }
   #credits-close:hover { color:#fff; }
+
+  /* --- Bottom drawer (mobile popup replacement) --- */
+  #drawer { position:fixed; bottom:0; left:0; right:0; z-index:1500; background:#1a1a1a; border-top:1px solid #333; border-radius:18px 18px 0 0; max-height:82dvh; overflow-y:auto; transform:translateY(100%); transition:transform .3s cubic-bezier(.32,.72,0,1); box-shadow:0 -8px 40px rgba(0,0,0,.7); display:none; -webkit-overflow-scrolling:touch; }
+  #drawer.open { transform:translateY(0); }
+  #drawer-handle-bar { width:44px; height:5px; background:#444; border-radius:3px; margin:12px auto 4px; flex-shrink:0; }
+  #drawer-close { position:sticky; top:0; float:right; background:none; border:none; color:#666; font-size:1.4rem; cursor:pointer; padding:4px 16px; z-index:1; line-height:1; touch-action:manipulation; }
+  #drawer-close:hover { color:#fff; }
+  #drawer-content { padding:0 16px 32px; clear:both; }
+  #drawer-content .popup-wrap { width:100%; max-width:100%; min-width:0; }
+
   /* Loading overlay */
   #loading-overlay { position:fixed; inset:0; background:#0f0f0f; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .4s; }
   #loading-overlay.hide { opacity:0; pointer-events:none; }
@@ -141,6 +170,47 @@
   @keyframes spin { to { transform:rotate(360deg); } }
   .loading-text { color:#888; font-size:0.85rem; }
   .loading-error { color:#f87171; font-size:0.8rem; max-width:360px; text-align:center; display:none; }
+
+  /* ── Mobile responsive ── */
+  @media (max-width: 768px) {
+    body { overflow: hidden; }
+    #header { padding: 8px 12px; gap: 8px; }
+    #header h1 { font-size: 0.88rem; }
+    #header .sub { display: none; }
+    /* Controls become an absolute dropdown below the header bar */
+    #controls {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0; right: 0;
+      z-index: 500;
+      margin: 0;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 10px 14px 12px;
+      gap: 8px;
+      background: #1a1a1a;
+      border-bottom: 1px solid #333;
+      box-shadow: 0 8px 24px rgba(0,0,0,.7);
+    }
+    #controls.open { display: flex; }
+    .ctrl-sep { display: none; }
+    .ctrl-group { flex-wrap: wrap; gap: 6px; }
+    .ctrl-group button { padding: 7px 14px; font-size: 0.82rem; }
+    #menu-btn { display: flex; }
+    #search-input { width: 120px; }
+    #search-input:focus { width: 150px; }
+    #map { height: calc(100dvh - 48px); }
+    #drawer { display: block; }
+    #credits-btn { bottom: 16px; right: 14px; font-size: 0.7rem; padding: 6px 12px; }
+    .leaflet-popup { display: none !important; }
+    .leaflet-control-zoom { display: none !important; }
+    .legend { font-size: 0.68rem; padding: 8px 10px; }
+  }
+  @media (min-width: 769px) {
+    #menu-btn { display: none !important; }
+    #drawer { display: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -153,9 +223,18 @@
   </div>
 </div>
 <div id="header">
-  <div>
-    <h1>Kerala NDA/BJP Analysis 2026</h1>
-    <div class="sub">Click a constituency for 2016 → 2021 → 2026 breakdown</div>
+  <div id="header-top">
+    <div style="min-width:0">
+      <h1>Kerala NDA/BJP Analysis 2026</h1>
+      <div class="sub">Tap a constituency for 2016 → 2021 → 2026 breakdown</div>
+    </div>
+    <div id="search-wrap" style="margin-left:auto">
+      <span id="search-icon">🔍</span>
+      <input id="search-input" type="text" placeholder="Search…" autocomplete="off"
+             oninput="onSearchInput()" onkeydown="onSearchKey(event)" />
+      <div id="search-dropdown"></div>
+    </div>
+    <button id="menu-btn" onclick="toggleMenu()" aria-label="Menu">☰</button>
   </div>
   <div id="controls">
     <div class="ctrl-group" id="year-toggle">
@@ -166,6 +245,7 @@
     <div class="ctrl-sep"></div>
     <div class="ctrl-group">
       <button onclick="setGrowth()" id="btnGrowth">NDA Growth 16→26</button>
+      <button onclick="setNda2nd()" id="btnNda2nd">NDA 2nd Place</button>
     </div>
     <div class="ctrl-sep"></div>
     <div class="ctrl-group" id="party-toggle">
@@ -182,6 +262,11 @@
   </div>
 </div>
 <div id="map"></div>
+<div id="drawer">
+  <div id="drawer-handle-bar"></div>
+  <button id="drawer-close" onclick="closeDrawer()">✕</button>
+  <div id="drawer-content"></div>
+</div>
 
 <script>
 
@@ -218,6 +303,13 @@ function applyResultsData() {
   return true;
 }
 
+
+// ── NDA 2nd-place helper ──────────────────────────────────────────────────────
+function isNda2nd(no) {
+  const r = KERALA_2026[no];
+  if (!r || r.ndaWon || !r.ndaVotes || !r.runnerUpVotes) return false;
+  return r.ndaVotes === r.runnerUpVotes;
+}
 
 // ── Colour scale (BJP/NDA vote share) ─────────────────────────────────────────
 // ── Share colour scale ────────────────────────────────────────────────────────
@@ -289,6 +381,8 @@ function style(feature) {
     const w26 = d && d.win26;
     const alliance = w26 ? winAlliance(d.no, w26.wp) : 'other';
     fillColor = alliance===viewMode ? (viewMode==='udf'?'#2563eb':viewMode==='ldf'?'#dc2626':'#f97316') : '#1a1a1a';
+  } else if (viewMode==='nda2nd') {
+    fillColor = (d && isNda2nd(d.no)) ? '#a855f7' : '#1a1a1a';
   } else if (viewMode==='hindu'||viewMode==='muslim'||viewMode==='christian') {
     fillColor = religionColor(dist, viewMode);
   } else {
@@ -414,6 +508,13 @@ function onEachFeature(feature, layer) {
         const dv = (d && d.v26!=null && d.v16!=null) ? d.v26-d.v16 : null;
         const dvStr = dv!==null ? (dv>=0?`▲ +${dv.toLocaleString('en-IN')}`:`▼ ${Math.abs(dv).toLocaleString('en-IN')}`) + ' votes' : '–';
         tip = `<b>${name}</b><br>Growth 2016→2026: ${dvStr}`;
+      } else if (viewMode==='nda2nd') {
+        const r = KERALA_2026[d && d.no];
+        if (r && isNda2nd(d.no)) {
+          tip = `<b>${name}</b><br>🥈 NDA 2nd · ${r.ndaCandidate.split(' ').slice(0,2).join(' ')} · ${r.ndaVotes.toLocaleString('en-IN')} votes`;
+        } else {
+          tip = `<b>${name}</b><br>NDA not 2nd here`;
+        }
       } else if (viewMode==='udf'||viewMode==='ldf'||viewMode==='nda') {
         const w26 = d && d.win26;
         const won = w26 && winAlliance(d.no, w26.wp)===viewMode;
@@ -434,10 +535,17 @@ function onEachFeature(feature, layer) {
       e.target.closeTooltip();
     },
     click(e) {
-      const popup = L.popup({ maxWidth: 360, className: '' })
-        .setLatLng(e.latlng)
-        .setContent(buildPopup(d, name, (feature.properties.District||'').toUpperCase()))
-        .openOn(map);
+      L.DomEvent.stopPropagation(e);
+      const distKey = (feature.properties.District||'').toUpperCase();
+      const content = buildPopup(d, name, distKey);
+      if (isMobile()) {
+        openDrawer(content);
+      } else {
+        L.popup({ maxWidth: 360 })
+          .setLatLng(e.latlng)
+          .setContent(content)
+          .openOn(map);
+      }
     },
   });
 }
@@ -452,13 +560,15 @@ buildLayer();
 function clearAllControls() {
   document.querySelectorAll('#year-toggle button').forEach(b => b.classList.remove('active','dimmed'));
   document.getElementById('btnGrowth').classList.remove('active-growth','dimmed');
+  document.getElementById('btnNda2nd').classList.remove('active-nda2nd','dimmed');
   ['#party-toggle button','#rel-toggle button'].forEach(sel =>
     document.querySelectorAll(sel).forEach(b => b.classList.remove('active-udf','active-ldf','active-nda','active-hindu','active-muslim','active-christian','dimmed')));
 }
 function dimOthers(keepId) {
   ['#year-toggle button','#party-toggle button','#rel-toggle button'].forEach(sel =>
     document.querySelectorAll(sel).forEach(b => { if(b.id!==keepId) b.classList.add('dimmed'); }));
-  if (keepId!=='btnGrowth') document.getElementById('btnGrowth').classList.add('dimmed');
+  if (keepId!=='btnGrowth')  document.getElementById('btnGrowth').classList.add('dimmed');
+  if (keepId!=='btnNda2nd') document.getElementById('btnNda2nd').classList.add('dimmed');
 }
 function setYear(yr) {
   viewMode = 'share'; activeYear = yr;
@@ -470,6 +580,12 @@ function setGrowth() {
   viewMode = 'growth';
   clearAllControls(); dimOthers('btnGrowth');
   document.getElementById('btnGrowth').classList.add('active-growth');
+  buildLayer(); renderLegend();
+}
+function setNda2nd() {
+  viewMode = 'nda2nd';
+  clearAllControls(); dimOthers('btnNda2nd');
+  document.getElementById('btnNda2nd').classList.add('active-nda2nd');
   buildLayer(); renderLegend();
 }
 function setParty(p) {
@@ -486,6 +602,33 @@ function setReligion(rel) {
   document.getElementById(id).classList.add('active-'+rel);
   buildLayer(); renderLegend();
 }
+// ── Mobile menu ───────────────────────────────────────────────────────────────
+function toggleMenu() {
+  const ctrl = document.getElementById('controls');
+  const btn  = document.getElementById('menu-btn');
+  const open = ctrl.classList.toggle('open');
+  btn.textContent = open ? '✕' : '☰';
+  btn.style.borderColor = open ? '#888' : '';
+}
+// Close menu when a filter button is tapped on mobile
+document.querySelectorAll('#controls button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (window.innerWidth <= 768) {
+      document.getElementById('controls').classList.remove('open');
+      document.getElementById('menu-btn').textContent = '☰';
+    }
+  });
+});
+// Close menu on outside tap
+document.addEventListener('click', e => {
+  if (window.innerWidth > 768) return;
+  const ctrl = document.getElementById('controls');
+  const menuBtn = document.getElementById('menu-btn');
+  if (ctrl.classList.contains('open') && !ctrl.contains(e.target) && e.target !== menuBtn) {
+    ctrl.classList.remove('open');
+    menuBtn.textContent = '☰';
+  }
+});
 
 // ── Legend ────────────────────────────────────────────────────────────────────
 const legend = L.control({ position: 'bottomleft' });
@@ -503,6 +646,11 @@ function renderLegend() {
   if (viewMode === 'growth') {
     div.innerHTML = '<h4>NDA Vote Growth 2016 → 2026</h4>' +
       GROWTH_TIERS.map(t => `<div class="legend-item"><div class="legend-swatch" style="background:${t.color}"></div>${t.label}</div>`).join('');
+  } else if (viewMode === 'nda2nd') {
+    const count = Object.keys(KERALA_2026).filter(no => isNda2nd(no)).length;
+    div.innerHTML = `<h4>NDA 2nd Place · 2026<br><span style="font-weight:400;color:#888;font-size:0.68rem">${count} constituencies</span></h4>
+      <div class="legend-item"><div class="legend-swatch" style="background:#a855f7"></div>NDA finished 2nd</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#1a1a1a;border-color:#333"></div>NDA 3rd or lower</div>`;
   } else if (viewMode==='udf'||viewMode==='ldf'||viewMode==='nda') {
     const color = viewMode==='udf'?'#2563eb':viewMode==='ldf'?'#dc2626':'#f97316';
     const lbl = viewMode==='nda'?'NDA':viewMode.toUpperCase();
@@ -545,6 +693,134 @@ function classifyAlliance(wp) {
 function winAlliance(no, wp) {
   return ALLIANCE_OVERRIDE[no]!==undefined ? ALLIANCE_OVERRIDE[no] : classifyAlliance(wp);
 }
+
+// ── Mobile helpers ────────────────────────────────────────────────────────────
+function isMobile() { return window.innerWidth <= 768; }
+
+function openDrawer(html) {
+  const drawer = document.getElementById('drawer');
+  document.getElementById('drawer-content').innerHTML = html;
+  drawer.scrollTop = 0;
+  drawer.classList.add('open');
+  // Close search dropdown if open
+  document.getElementById('search-dropdown').classList.remove('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+}
+
+// Touch swipe-to-dismiss drawer
+(function() {
+  const drawer = document.getElementById('drawer');
+  if (!drawer) return;
+  let startY = 0, startScrollTop = 0;
+  drawer.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+    startScrollTop = drawer.scrollTop;
+  }, { passive: true });
+  drawer.addEventListener('touchend', e => {
+    const dy = e.changedTouches[0].clientY - startY;
+    if (dy > 80 && startScrollTop === 0) closeDrawer();
+  }, { passive: true });
+})();
+
+// Tap on map (outside drawer) closes drawer
+map.on('click', () => {
+  if (isMobile()) closeDrawer();
+});
+
+// ── Search ────────────────────────────────────────────────────────────────────
+let searchIndex = [];
+let searchFocused = -1;
+
+function buildSearchIndex() {
+  searchIndex = [];
+  for (const feat of GEOJSON.features) {
+    const d = feat.properties.data;
+    if (d && d.no && d.name) {
+      searchIndex.push({ no: d.no, name: d.name, dist: feat.properties.District || '' });
+    }
+  }
+  searchIndex.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function onSearchInput() {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  const dd = document.getElementById('search-dropdown');
+  searchFocused = -1;
+  if (q.length < 2) { dd.classList.remove('open'); dd.innerHTML = ''; return; }
+  const results = searchIndex.filter(s => s.name.toLowerCase().includes(q)).slice(0, 12);
+  if (!results.length) {
+    dd.innerHTML = '<div class="search-no-result">No results</div>';
+    dd.classList.add('open');
+    return;
+  }
+  dd.innerHTML = results.map((r, i) =>
+    `<div class="search-item" data-no="${r.no}" data-idx="${i}" onclick="selectConstituency(${r.no})">
+      <span>${r.name}</span><span class="si-dist">${r.dist}</span>
+    </div>`
+  ).join('');
+  dd.classList.add('open');
+}
+
+function onSearchKey(e) {
+  const dd = document.getElementById('search-dropdown');
+  const items = dd.querySelectorAll('.search-item');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    searchFocused = Math.min(searchFocused + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('focused', i === searchFocused));
+    items[searchFocused] && items[searchFocused].scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    searchFocused = Math.max(searchFocused - 1, 0);
+    items.forEach((el, i) => el.classList.toggle('focused', i === searchFocused));
+  } else if (e.key === 'Enter') {
+    if (searchFocused >= 0 && items[searchFocused]) {
+      selectConstituency(+items[searchFocused].dataset.no);
+    } else if (items[0]) {
+      selectConstituency(+items[0].dataset.no);
+    }
+  } else if (e.key === 'Escape') {
+    dd.classList.remove('open');
+    document.getElementById('search-input').blur();
+  }
+}
+
+function selectConstituency(no) {
+  document.getElementById('search-dropdown').classList.remove('open');
+  document.getElementById('search-input').value = '';
+  geoLayer.eachLayer(layer => {
+    const d = layer.feature && layer.feature.properties.data;
+    if (d && +d.no === +no) {
+      const bounds = layer.getBounds();
+      map.fitBounds(bounds, { maxZoom: 10, animate: true, padding: [40, 40] });
+      setTimeout(() => {
+        const distKey = (layer.feature.properties.District || '').toUpperCase();
+        const content = buildPopup(d, d.name, distKey);
+        if (isMobile()) {
+          openDrawer(content);
+        } else {
+          L.popup({ maxWidth: 360 })
+            .setLatLng(bounds.getCenter())
+            .setContent(content)
+            .openOn(map);
+        }
+      }, 350);
+    }
+  });
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  if (!document.getElementById('search-wrap').contains(e.target)) {
+    document.getElementById('search-dropdown').classList.remove('open');
+  }
+});
+
+// Build index after map is ready
+buildSearchIndex();
 
 // ── Constituency-specific analyses ───────────────────────────────────────────
 
