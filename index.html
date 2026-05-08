@@ -163,6 +163,30 @@
   #drawer-content { padding:0 16px 32px; clear:both; }
   #drawer-content .popup-wrap { width:100%; max-width:100%; min-width:0; }
 
+  /* ── Auth overlay ── */
+  #auth-overlay { position:fixed; inset:0; background:#0a0a0a; z-index:10000; display:flex; align-items:center; justify-content:center; transition:opacity .5s; }
+  #auth-overlay.hide { opacity:0; pointer-events:none; }
+  #auth-card { background:#1a1a1a; border:1px solid #2a2a2a; border-radius:20px; padding:36px 32px 28px; max-width:420px; width:90%; text-align:center; box-shadow:0 24px 80px rgba(0,0,0,.9); }
+  #auth-om { font-size:2.4rem; margin-bottom:10px; animation: pulse-om 2s ease-in-out infinite; }
+  @keyframes pulse-om { 0%,100%{transform:scale(1);opacity:.9} 50%{transform:scale(1.12);opacity:1} }
+  #auth-title { font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:6px; }
+  #auth-hint { font-size:0.78rem; color:#888; margin-bottom:18px; }
+  #auth-password-hint { display:inline-block; background:#1f1a10; border:1px solid #5a3a00; border-radius:8px; padding:7px 18px; font-size:0.82rem; color:#fbbf24; margin-bottom:22px; letter-spacing:.03em; }
+  #auth-password-hint strong { color:#f97316; font-size:0.95rem; letter-spacing:.08em; }
+  #auth-otp-wrap { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .auth-word-group { display:flex; gap:6px; }
+  .auth-word-sep { color:#555; font-size:0.9rem; }
+  .otp-box { width:42px; height:52px; background:#111; border:2px solid #333; border-radius:10px; color:#fff; font-size:1.3rem; font-weight:700; text-align:center; text-transform:uppercase; outline:none; transition:border-color .15s, box-shadow .15s; caret-color:transparent; -webkit-tap-highlight-color:transparent; }
+  .otp-box:focus { border-color:#f97316; box-shadow:0 0 0 3px rgba(249,115,22,.2); }
+  .otp-box.filled { border-color:#555; color:#f97316; }
+  .otp-box.shake { animation:shake .3s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+  #auth-error { min-height:20px; font-size:0.75rem; color:#f87171; margin-bottom:10px; transition:opacity .2s; }
+  #auth-submit { background:#f97316; border:none; border-radius:12px; color:#fff; font-size:0.9rem; font-weight:700; padding:11px 36px; cursor:pointer; transition:background .15s, transform .1s; touch-action:manipulation; margin-bottom:16px; }
+  #auth-submit:hover { background:#ea6b0a; }
+  #auth-submit:active { transform:scale(.97); }
+  #auth-footer { font-size:0.7rem; color:#555; }
+
   /* Loading overlay */
   #loading-overlay { position:fixed; inset:0; background:#0f0f0f; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .4s; }
   #loading-overlay.hide { opacity:0; pointer-events:none; }
@@ -214,6 +238,30 @@
 </style>
 </head>
 <body>
+<div id="auth-overlay">
+  <div id="auth-card">
+    <div id="auth-om">🕉️</div>
+    <h2 id="auth-title">Kerala NDA/BJP Analysis 2026</h2>
+    <p id="auth-hint">Enter the passphrase to continue</p>
+    <div id="auth-password-hint">🔑 Password: <strong>JAI SRI RAM</strong></div>
+    <div id="auth-otp-wrap">
+      <div class="auth-word-group">
+        <input class="otp-box" maxlength="1" data-idx="0" /><input class="otp-box" maxlength="1" data-idx="1" /><input class="otp-box" maxlength="1" data-idx="2" />
+      </div>
+      <div class="auth-word-sep">✦</div>
+      <div class="auth-word-group">
+        <input class="otp-box" maxlength="1" data-idx="3" /><input class="otp-box" maxlength="1" data-idx="4" /><input class="otp-box" maxlength="1" data-idx="5" />
+      </div>
+      <div class="auth-word-sep">✦</div>
+      <div class="auth-word-group">
+        <input class="otp-box" maxlength="1" data-idx="6" /><input class="otp-box" maxlength="1" data-idx="7" /><input class="otp-box" maxlength="1" data-idx="8" />
+      </div>
+    </div>
+    <div id="auth-error"></div>
+    <button id="auth-submit" onclick="checkAuth()">Enter →</button>
+    <p id="auth-footer">Non-BJP supporters, you know what to type 😄</p>
+  </div>
+</div>
 <div id="loading-overlay">
   <div class="loading-spinner"></div>
   <div class="loading-text">Loading election data…</div>
@@ -269,6 +317,69 @@
 </div>
 
 <script>
+
+// ── Auth gate ─────────────────────────────────────────────────────────────────
+(function initAuth() {
+  const ANSWER = 'JAISRIRAM';
+  const boxes  = Array.from(document.querySelectorAll('.otp-box'));
+
+  boxes.forEach((box, i) => {
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        box.value = '';
+        box.classList.remove('filled');
+        if (i > 0) boxes[i - 1].focus();
+      } else if (e.key === 'Enter') {
+        checkAuth();
+      }
+    });
+
+    box.addEventListener('input', e => {
+      const ch = box.value.replace(/[^a-zA-Z]/g, '').slice(-1).toUpperCase();
+      box.value = ch;
+      if (ch) {
+        box.classList.add('filled');
+        if (i < boxes.length - 1) boxes[i + 1].focus();
+        else document.getElementById('auth-submit').focus();
+      } else {
+        box.classList.remove('filled');
+      }
+      document.getElementById('auth-error').textContent = '';
+    });
+
+    // Handle paste across all boxes
+    box.addEventListener('paste', e => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData)
+        .getData('text').replace(/[^a-zA-Z]/g, '').toUpperCase();
+      text.split('').forEach((ch, j) => {
+        if (boxes[i + j]) { boxes[i + j].value = ch; boxes[i + j].classList.add('filled'); }
+      });
+      const next = Math.min(i + text.length, boxes.length - 1);
+      boxes[next].focus();
+    });
+  });
+
+  // Focus first box on load
+  setTimeout(() => boxes[0] && boxes[0].focus(), 100);
+})();
+
+function checkAuth() {
+  const boxes  = Array.from(document.querySelectorAll('.otp-box'));
+  const entered = boxes.map(b => b.value.toUpperCase()).join('');
+  if (entered === 'JAISRIRAM') {
+    const overlay = document.getElementById('auth-overlay');
+    overlay.classList.add('hide');
+    setTimeout(() => overlay.remove(), 600);
+  } else {
+    const errEl = document.getElementById('auth-error');
+    errEl.textContent = entered.length < 9 ? 'Please fill all boxes 🙏' : 'Wrong passphrase — try again! 🚩';
+    boxes.forEach(b => { b.classList.add('shake'); setTimeout(() => b.classList.remove('shake'), 300); });
+    // Clear and refocus
+    setTimeout(() => { boxes.forEach(b => { b.value=''; b.classList.remove('filled'); }); boxes[0].focus(); }, 400);
+  }
+}
 
 // ── Apply external 2026 results to GeoJSON features ──────────────────────────
 function applyResultsData() {
