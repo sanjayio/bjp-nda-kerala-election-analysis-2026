@@ -16,14 +16,48 @@
   #header-top { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; min-width: 0; }
   #header h1 { font-size: 1.05rem; font-weight: 700; color: #fff; white-space: nowrap; }
   #header .sub { font-size: 0.75rem; color: #999; }
-  #controls { display: flex; gap: 8px; margin-left: auto; align-items: center; flex-wrap: wrap; }
-  .ctrl-group { display: flex; gap: 5px; }
-  .ctrl-sep { width: 1px; background: #444; align-self: stretch; }
-  .ctrl-group button { padding: 5px 13px; border-radius: 20px; border: 1.5px solid #555; background: transparent; color: #aaa; cursor: pointer; font-size: 0.76rem; font-weight: 600; transition: all .15s; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-  .ctrl-group button.active { background: #ff6600; border-color: #ff6600; color: #fff; }
-  .ctrl-group button.active-growth { background: #22c55e; border-color: #22c55e; color: #fff; }
-  .ctrl-group button.dimmed { opacity: 0.35; }
-  #map { height: calc(100dvh - 54px); }
+
+  /* ── Controls row ── */
+  #controls { display: flex; gap: 6px; margin-left: auto; align-items: center; flex-wrap: nowrap; }
+  .ctrl-sep { width: 1px; background: #333; align-self: stretch; margin: 0 2px; }
+
+  /* Year pill buttons */
+  .ctrl-group { display: flex; gap: 4px; }
+  .ctrl-group button { padding: 5px 13px; border-radius: 20px; border: 1.5px solid #555; background: transparent; color: #aaa; cursor: pointer; font-size: 0.76rem; font-weight: 600; transition: all .15s; touch-action: manipulation; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+  .ctrl-group button.active  { background: #ff6600; border-color: #ff6600; color: #fff; }
+  .ctrl-group button.dimmed  { opacity: 0.3; }
+
+  /* ── Dropdown controls ── */
+  .ctrl-dropdown { position: relative; }
+  .dd-btn { padding: 5px 12px 5px 13px; border-radius: 20px; border: 1.5px solid #555; background: transparent; color: #aaa; cursor: pointer; font-size: 0.76rem; font-weight: 600; transition: all .15s; touch-action: manipulation; -webkit-tap-highlight-color: transparent; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .dd-btn:hover { border-color: #888; color: #fff; }
+  .dd-btn .dd-arrow { font-size: 0.6rem; transition: transform .2s; }
+  .ctrl-dropdown.open .dd-btn .dd-arrow { transform: rotate(180deg); }
+  .dd-btn.dimmed { opacity: 0.3; }
+  /* Active dd-btn inherits child's color via JS-added class */
+  .dd-btn.active-growth    { background:#22c55e; border-color:#22c55e; color:#fff; }
+  .dd-btn.active-nda2nd    { background:#a855f7; border-color:#a855f7; color:#fff; }
+  .dd-btn.active-udf       { background:#1d4ed8; border-color:#1d4ed8; color:#fff; }
+  .dd-btn.active-ldf       { background:#dc2626; border-color:#dc2626; color:#fff; }
+  .dd-btn.active-nda       { background:#f97316; border-color:#f97316; color:#fff; }
+  .dd-btn.active-hindu     { background:#f97316; border-color:#f97316; color:#fff; }
+  .dd-btn.active-muslim    { background:#16a34a; border-color:#16a34a; color:#fff; }
+  .dd-btn.active-christian { background:#3b82f6; border-color:#3b82f6; color:#fff; }
+
+  .dd-panel { position: absolute; top: calc(100% + 6px); right: 0; background: #1e1e1e; border: 1px solid #3a3a3a; border-radius: 12px; padding: 6px; z-index: 600; display: none; flex-direction: column; gap: 3px; min-width: 170px; box-shadow: 0 8px 32px rgba(0,0,0,.8); }
+  .ctrl-dropdown.open .dd-panel { display: flex; }
+  .dd-panel button { padding: 8px 14px; border-radius: 8px; border: none; background: transparent; color: #ccc; cursor: pointer; font-size: 0.76rem; font-weight: 600; text-align: left; transition: all .15s; touch-action: manipulation; white-space: nowrap; }
+  .dd-panel button:hover { background: #2a2a2a; color: #fff; }
+  .dd-panel button.active-growth    { background:rgba(34,197,94,.15);  color:#4ade80; }
+  .dd-panel button.active-nda2nd    { background:rgba(168,85,247,.15); color:#c084fc; }
+  .dd-panel button.active-udf       { background:rgba(29,78,216,.15);  color:#60a5fa; }
+  .dd-panel button.active-ldf       { background:rgba(220,38,38,.15);  color:#f87171; }
+  .dd-panel button.active-nda       { background:rgba(249,115,22,.15); color:#fb923c; }
+  .dd-panel button.active-hindu     { background:rgba(249,115,22,.15); color:#fb923c; }
+  .dd-panel button.active-muslim    { background:rgba(22,163,74,.15);  color:#4ade80; }
+  .dd-panel button.active-christian { background:rgba(59,130,246,.15); color:#93c5fd; }
+
+  #map { height: calc(100dvh - 50px); }
 
   /* ── Search ── */
   #search-wrap { position: relative; flex-shrink: 0; }
@@ -78,16 +112,6 @@
   .leaflet-popup-content { margin: 16px; }
   .leaflet-popup-close-button { color: #888 !important; font-size: 1.1rem !important; top: 10px !important; right: 12px !important; }
 
-  /* --- Navbar extras --- */
-  .ctrl-group button.active-growth    { background: #22c55e; border-color: #22c55e; color: #fff; }
-  .ctrl-group button.active-nda2nd    { background: #a855f7; border-color: #a855f7; color: #fff; }
-  .ctrl-group button.active-hindu     { background: #f97316; border-color: #f97316; color: #fff; }
-  .ctrl-group button.active-muslim    { background: #16a34a; border-color: #16a34a; color: #fff; }
-  .ctrl-group button.active-christian { background: #3b82f6; border-color: #3b82f6; color: #fff; }
-  .ctrl-group button.active-udf       { background: #1d4ed8; border-color: #1d4ed8; color: #fff; }
-  .ctrl-group button.active-ldf       { background: #dc2626; border-color: #dc2626; color: #fff; }
-  .ctrl-group button.active-nda       { background: #f97316; border-color: #f97316; color: #fff; }
-  .ctrl-group button.dimmed           { opacity: 0.35; }
 
   /* --- Popup layout --- */
   .popup-wrap   { width: 340px; }
@@ -201,26 +225,43 @@
     #header { padding: 8px 12px; gap: 8px; }
     #header h1 { font-size: 0.88rem; }
     #header .sub { display: none; }
-    /* Controls become an absolute dropdown below the header bar */
+    /* Controls: absolute dropdown below header */
     #controls {
       display: none;
       position: absolute;
-      top: 100%;
-      left: 0; right: 0;
+      top: 100%; left: 0; right: 0;
       z-index: 500;
       margin: 0;
       flex-direction: column;
       align-items: flex-start;
-      padding: 10px 14px 12px;
-      gap: 8px;
+      padding: 10px 14px 14px;
+      gap: 10px;
       background: #1a1a1a;
       border-bottom: 1px solid #333;
       box-shadow: 0 8px 24px rgba(0,0,0,.7);
     }
     #controls.open { display: flex; }
     .ctrl-sep { display: none; }
+    /* Year group */
     .ctrl-group { flex-wrap: wrap; gap: 6px; }
     .ctrl-group button { padding: 7px 14px; font-size: 0.82rem; }
+    /* Flatten dropdowns — show all buttons directly in mobile menu */
+    .ctrl-dropdown { position: static; width: 100%; }
+    .dd-btn { display: none; }          /* hide the dropdown trigger */
+    .dd-panel {                          /* always show items inline */
+      display: flex !important;
+      position: static;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      min-width: 0;
+    }
+    .dd-panel button { padding: 7px 13px; border-radius: 20px; border: 1.5px solid #555; color: #aaa; font-size: 0.82rem; }
+    .dd-panel button:hover { background: transparent; }
     #menu-btn { display: flex; }
     #search-input { width: 120px; }
     #search-input:focus { width: 150px; }
@@ -291,21 +332,28 @@
       <button onclick="setYear(2026)" id="btn2026" class="active">2026</button>
     </div>
     <div class="ctrl-sep"></div>
-    <div class="ctrl-group">
-      <button onclick="setGrowth()" id="btnGrowth">NDA Growth 16→26</button>
-      <button onclick="setNda2nd()" id="btnNda2nd">NDA 2nd Place</button>
+    <div class="ctrl-dropdown" id="dd-trends">
+      <button class="dd-btn" onclick="toggleDropdown('dd-trends')">NDA Trends <span class="dd-arrow">▾</span></button>
+      <div class="dd-panel">
+        <button onclick="setGrowth()" id="btnGrowth">NDA Growth 16→26</button>
+        <button onclick="setNda2nd()" id="btnNda2nd">NDA 2nd Place</button>
+      </div>
     </div>
-    <div class="ctrl-sep"></div>
-    <div class="ctrl-group" id="party-toggle">
-      <button onclick="setParty('udf')" id="btnUDF">UDF Wins 2026</button>
-      <button onclick="setParty('ldf')" id="btnLDF">LDF Wins 2026</button>
-      <button onclick="setParty('nda')" id="btnNDA">NDA Wins 2026</button>
+    <div class="ctrl-dropdown" id="dd-party">
+      <button class="dd-btn" onclick="toggleDropdown('dd-party')">Alliance Wins <span class="dd-arrow">▾</span></button>
+      <div class="dd-panel">
+        <button onclick="setParty('udf')" id="btnUDF">UDF Wins 2026</button>
+        <button onclick="setParty('ldf')" id="btnLDF">LDF Wins 2026</button>
+        <button onclick="setParty('nda')" id="btnNDA">NDA Wins 2026</button>
+      </div>
     </div>
-    <div class="ctrl-sep"></div>
-    <div class="ctrl-group" id="rel-toggle">
-      <button onclick="setReligion('hindu')"     id="btnHindu">Hindu</button>
-      <button onclick="setReligion('muslim')"    id="btnMuslim">Muslim</button>
-      <button onclick="setReligion('christian')" id="btnChristian">Christian</button>
+    <div class="ctrl-dropdown" id="dd-religion">
+      <button class="dd-btn" onclick="toggleDropdown('dd-religion')">Demographics <span class="dd-arrow">▾</span></button>
+      <div class="dd-panel">
+        <button onclick="setReligion('hindu')"     id="btnHindu">Hindu</button>
+        <button onclick="setReligion('muslim')"    id="btnMuslim">Muslim</button>
+        <button onclick="setReligion('christian')" id="btnChristian">Christian</button>
+      </div>
     </div>
   </div>
 </div>
@@ -667,52 +715,72 @@ function buildLayer() {
 }
 buildLayer();
 
+// ── Dropdown toggle ───────────────────────────────────────────────────────────
+function toggleDropdown(id) {
+  const isOpen = document.getElementById(id).classList.contains('open');
+  document.querySelectorAll('.ctrl-dropdown').forEach(d => d.classList.remove('open'));
+  if (!isOpen) document.getElementById(id).classList.add('open');
+}
+// Close dropdowns on outside click (desktop)
+document.addEventListener('click', e => {
+  if (!e.target.closest('.ctrl-dropdown')) {
+    document.querySelectorAll('.ctrl-dropdown').forEach(d => d.classList.remove('open'));
+  }
+});
+
 // ── Controls ─────────────────────────────────────────────────────────────────
+const ALL_ACTIVE_CLASSES = ['active','active-growth','active-nda2nd','active-udf','active-ldf','active-nda','active-hindu','active-muslim','active-christian'];
+
 function clearAllControls() {
-  document.querySelectorAll('#year-toggle button').forEach(b => b.classList.remove('active','dimmed'));
-  document.getElementById('btnGrowth').classList.remove('active-growth','dimmed');
-  document.getElementById('btnNda2nd').classList.remove('active-nda2nd','dimmed');
-  ['#party-toggle button','#rel-toggle button'].forEach(sel =>
-    document.querySelectorAll(sel).forEach(b => b.classList.remove('active-udf','active-ldf','active-nda','active-hindu','active-muslim','active-christian','dimmed')));
+  document.querySelectorAll('#year-toggle button').forEach(b => b.classList.remove(...ALL_ACTIVE_CLASSES, 'dimmed'));
+  document.querySelectorAll('.dd-btn').forEach(b => b.classList.remove(...ALL_ACTIVE_CLASSES, 'dimmed'));
+  document.querySelectorAll('.dd-panel button').forEach(b => b.classList.remove(...ALL_ACTIVE_CLASSES));
+  document.querySelectorAll('.ctrl-dropdown').forEach(d => d.classList.remove('has-active'));
 }
-function dimOthers(keepId) {
-  ['#year-toggle button','#party-toggle button','#rel-toggle button'].forEach(sel =>
-    document.querySelectorAll(sel).forEach(b => { if(b.id!==keepId) b.classList.add('dimmed'); }));
-  if (keepId!=='btnGrowth')  document.getElementById('btnGrowth').classList.add('dimmed');
-  if (keepId!=='btnNda2nd') document.getElementById('btnNda2nd').classList.add('dimmed');
+
+function activateDropdown(ddId, btnId, activeClass) {
+  document.getElementById(btnId).classList.add(activeClass);
+  document.getElementById(ddId).classList.add('has-active');
+  document.getElementById(ddId).querySelector('.dd-btn').classList.add(activeClass);
+  // dim year buttons + other dd-btns
+  document.querySelectorAll('#year-toggle button').forEach(b => b.classList.add('dimmed'));
+  document.querySelectorAll('.ctrl-dropdown').forEach(d => {
+    if (d.id !== ddId) d.querySelector('.dd-btn').classList.add('dimmed');
+  });
 }
+
 function setYear(yr) {
   viewMode = 'share'; activeYear = yr;
   clearAllControls();
   document.getElementById('btn'+yr).classList.add('active');
+  document.querySelectorAll('.dd-btn').forEach(b => b.classList.add('dimmed'));
   buildLayer(); renderLegend();
 }
 function setGrowth() {
   viewMode = 'growth';
-  clearAllControls(); dimOthers('btnGrowth');
-  document.getElementById('btnGrowth').classList.add('active-growth');
+  clearAllControls();
+  activateDropdown('dd-trends', 'btnGrowth', 'active-growth');
   buildLayer(); renderLegend();
 }
 function setNda2nd() {
   viewMode = 'nda2nd';
-  clearAllControls(); dimOthers('btnNda2nd');
-  document.getElementById('btnNda2nd').classList.add('active-nda2nd');
+  clearAllControls();
+  activateDropdown('dd-trends', 'btnNda2nd', 'active-nda2nd');
   buildLayer(); renderLegend();
 }
 function setParty(p) {
   viewMode = p;
-  const id = 'btn'+p.toUpperCase();
-  clearAllControls(); dimOthers(id);
-  document.getElementById(id).classList.add('active-'+p);
+  clearAllControls();
+  activateDropdown('dd-party', 'btn'+p.toUpperCase(), 'active-'+p);
   buildLayer(); renderLegend();
 }
 function setReligion(rel) {
   viewMode = rel;
-  const id = 'btn'+rel.charAt(0).toUpperCase()+rel.slice(1);
-  clearAllControls(); dimOthers(id);
-  document.getElementById(id).classList.add('active-'+rel);
+  clearAllControls();
+  activateDropdown('dd-religion', 'btn'+rel.charAt(0).toUpperCase()+rel.slice(1), 'active-'+rel);
   buildLayer(); renderLegend();
 }
+
 // ── Mobile menu ───────────────────────────────────────────────────────────────
 function toggleMenu() {
   const ctrl = document.getElementById('controls');
@@ -721,8 +789,8 @@ function toggleMenu() {
   btn.textContent = open ? '✕' : '☰';
   btn.style.borderColor = open ? '#888' : '';
 }
-// Close menu when a filter button is tapped on mobile
-document.querySelectorAll('#controls button').forEach(btn => {
+// Close menu when a filter is tapped on mobile
+document.querySelectorAll('#controls .ctrl-group button, #controls .dd-panel button').forEach(btn => {
   btn.addEventListener('click', () => {
     if (window.innerWidth <= 768) {
       document.getElementById('controls').classList.remove('open');
@@ -730,7 +798,7 @@ document.querySelectorAll('#controls button').forEach(btn => {
     }
   });
 });
-// Close menu on outside tap
+// Close mobile menu on outside tap
 document.addEventListener('click', e => {
   if (window.innerWidth > 768) return;
   const ctrl = document.getElementById('controls');
